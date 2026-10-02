@@ -2,6 +2,7 @@
 # dsh-chatgpt-web Architecture
 
 **Status:** Definitive target architecture  
+**Implementation status:** Target architecture; the repository still contains the pre-rearchitecture HTTP/ProviderAdapter path that this document defines how to converge.  
 **Document role:** Architectural reference and implementation boundary  
 **Repository:** lordraiden/dsh-chatgpt-web  
 **Last updated:** 2026-10-02
@@ -1211,6 +1212,42 @@ surface transport
 Cancellation must be idempotent.
 
 A cancellation race must not produce a false successful completion.
+
+### 15.7 Special browser interaction profiles
+
+The repository already distinguishes browser interaction profiles, including automatic browser interaction and explicitly controlled/manual interaction.
+
+These are **surface-transport profiles**, not separate LLM providers.
+
+The architectural rule is:
+
+~~~text
+provider = chatgpt-web
+model    = luna
+interaction profile = transport policy
+~~~
+
+For example, a stricter/manual or Zero Risk style mode may require:
+
+- an explicitly controlled browser host;
+- a different interaction handshake;
+- explicit user confirmation;
+- local tool capability availability;
+- a different completion/settlement path.
+
+Those requirements belong below ProviderCore's provider boundary.
+
+The ProviderCore should receive a normalized capability such as:
+
+~~~text
+browserInteractionMode = automatic | manual
+~~~
+
+and delegate the mechanics to WebSurfaceTransport.
+
+It must not leak launcher descriptors, Playwright objects, DOM state, or confirmation-click mechanics into the DSH LLM adapter.
+
+This keeps special browser modes compatible with the same native DSH provider contract instead of creating parallel model providers for each browser interaction policy.
 
 ---
 
