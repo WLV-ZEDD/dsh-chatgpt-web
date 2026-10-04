@@ -22,9 +22,9 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
-import process from "node:process";
+import { fileURLToPath } from "node:url";
 
-const repoRoot = resolve(new URL("..", import.meta.url).pathname);
+const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const repoPackage = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8"));
 const packageName = repoPackage.name;
 
@@ -36,7 +36,8 @@ const fail = (msg) => {
 };
 
 function run(cmd, args, options = {}) {
-  return spawnSync(cmd, args, { encoding: "utf8", ...options });
+  const needsShell = process.platform === "win32" && (cmd === "npm" || cmd === "bun");
+  return spawnSync(cmd, args, { encoding: "utf8", shell: needsShell, ...options });
 }
 
 // 1. Obtain the tarball.
@@ -90,7 +91,8 @@ try {
   if (!existsSync(binPath)) {
     fail(`installed binary not found at ${binPath}`);
   } else {
-    const help = run(process.execPath, [binPath, "--help"], { cwd: cleanDir });
+    const binTarget = process.platform === "win32" ? join(pkgDir, "lib", "cli.js") : binPath;
+    const help = run(process.execPath, [binTarget, "--help"], { cwd: cleanDir });
     if (help.status !== 0) {
       fail(`--help failed (exit ${help.status}): ${(help.stderr || help.stdout).trim().slice(-400)}`);
     } else if (!/Usage:/.test(help.stdout)) {
