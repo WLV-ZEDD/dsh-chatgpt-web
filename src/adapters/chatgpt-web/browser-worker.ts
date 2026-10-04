@@ -1331,7 +1331,7 @@ export async function setChatGptThinkMode(
   captureDiagnostic?: (checkpoint: string) => Promise<void>,
 ): Promise<void> {
   const controls = composerForm
-    .getByRole("button", { name: "Think", exact: true })
+    .getByRole("button", { name: /^(?:Think|思考)$/i })
     .filter({ visible: true });
   const count = await controls.count();
   if (count === 0) {
