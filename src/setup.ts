@@ -46,6 +46,7 @@ import { VERSION } from "./version";
 
 export interface SetupOptions {
   mode: RuntimeMode;
+  dsh?: boolean;
   browserInteractionMode?: BrowserInteractionMode;
   subagentProtocol?: SubagentProtocol;
   port?: number;
@@ -71,7 +72,7 @@ export interface SetupResult {
   loginCreated: boolean;
   serviceLoaded: boolean;
   tunnelReady: boolean | null;
-  codexRestartRequired: true;
+  codexRestartRequired: boolean;
   connectorSetupRequired: boolean;
 }
 
@@ -405,8 +406,55 @@ async function bootstrapTunnelProfile(config: AppConfig): Promise<void> {
   if (bootstrapError) throw bootstrapError;
 }
 
+function prepareDshSetup(options: SetupOptions): AppConfig {
+  const existing = loadExistingConfig();
+  if (existing && existing.purpose !== "dsh") {
+    throw new Error("DSH setup requires its own storage home; refusing to replace a Codex or DEV configuration");
+  }
+  if (options.mode !== "browser-only" || options.browserInteractionMode === "manual"
+    || options.browserHostDescriptorPath || options.replaceCodexRoute || options.restartService
+    || options.tunnelId || options.runtimeKeyFile || options.runtimeKeyValue) {
+    throw new Error("DSH setup supports only managed Chrome in browser-only mode; DSH owns the sidecar");
+  }
+  const config = baseConfig(existing, options);
+  if (config.browserHost !== "managed-chrome" || config.browserInteractionMode !== "automatic") {
+    throw new Error("DSH setup requires managed Chrome with automatic browser interaction");
+  }
+  if (!existsSync(config.chromeExecutablePath)) {
+    throw new Error(`Google Chrome executable not found at: ${config.chromeExecutablePath}. Provide --chrome <path>`);
+  }
+  config.purpose = "dsh";
+  return config;
+}
+
+async function setupDsh(options: SetupOptions): Promise<SetupResult> {
+  const config = prepareDshSetup(options);
+  await assertPortAvailable(config.host, config.port);
+  const loginCreated = options.forceLogin === true || !browserLoginStateExists(config);
+  const capabilities = loginCreated
+    ? await loginToChatGpt(config)
+    : options.refreshAccountCapabilities
+      ? await inspectBrowserLoginCapabilities(config)
+      : storedBrowserLoginCapabilities(config);
+  config.solAvailable = capabilities.solAvailable === true;
+  config.proAvailable = config.solAvailable && capabilities.proAvailable === true;
+  saveConfig(config);
+  return {
+    mode: config.mode,
+    configPath: getConfigPath(),
+    loginCreated,
+    serviceLoaded: false,
+    tunnelReady: null,
+    codexRestartRequired: false,
+    connectorSetupRequired: false,
+  };
+}
+
 function prepareSetup(options: SetupOptions): PreparedSetup {
   const existing = loadExistingConfig();
+  if (existing?.purpose === "dsh") {
+    throw new Error("This configuration is owned by DSH; use setup --dsh");
+  }
   if (existing?.purpose === DEV_CONFIG_PURPOSE) {
     throw new Error("A DEV harness configuration cannot be installed into Codex");
   }
@@ -426,6 +474,10 @@ function prepareSetup(options: SetupOptions): PreparedSetup {
 }
 
 export function preflightSetup(options: SetupOptions): void {
+  if (options.dsh) {
+    prepareDshSetup(options);
+    return;
+  }
   const { existing, config } = prepareSetup(options);
   if (config.mode === "full") {
     const saved = existing?.mode === "full"
@@ -464,6 +516,7 @@ export function preflightSetup(options: SetupOptions): void {
 }
 
 export async function setup(options: SetupOptions): Promise<SetupResult> {
+  if (options.dsh) return setupDsh(options);
   const { existing, config, launcherOwned } = prepareSetup(options);
   preflightCodexIntegration(config, {
     replaceExistingRoute: options.replaceCodexRoute,

@@ -16,6 +16,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -58,7 +59,7 @@ if (!tarball) {
 console.log(`Tarball: ${basename(tarball)}`);
 
 // 2. Clean install directory (no repo files).
-const work = mkdtempSync(join(tmpdir(), `dsh-smoke-${process.pid}-`));
+const work = realpathSync(mkdtempSync(join(tmpdir(), `dsh-smoke-${process.pid}-`)));
 const cleanDir = join(work, "install");
 const extractDir = join(work, "extract");
 mkdirSync(cleanDir, { recursive: true });
@@ -104,7 +105,10 @@ try {
 
   // 5. doctor must start without module-resolution errors (it exits 1 when no
   //    config exists, which is the expected clean-machine result).
-  const doctor = run(process.execPath, [join(pkgDir, "lib", "cli.js"), "doctor"], { cwd: cleanDir });
+  const doctor = run(process.execPath, [join(pkgDir, "lib", "cli.js"), "doctor"], {
+    cwd: cleanDir,
+    env: { ...process.env, DSH_CHATGPT_FREE_HOME: join(work, "empty-home") },
+  });
   const doctorText = `${doctor.stdout}\n${doctor.stderr}`;
   if (/Cannot find module|ERR_MODULE_NOT_FOUND|playwright-core\/package\.json/.test(doctorText)) {
     fail(`doctor hit a module-resolution error: ${doctorText.trim().slice(-400)}`);

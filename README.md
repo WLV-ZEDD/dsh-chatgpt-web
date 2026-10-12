@@ -78,15 +78,17 @@ This registers the plugin in the profile's `package.json` bundles, so its Cordis
 Authenticate your ChatGPT account once. The plugin binary lives in the profile's `node_modules/.bin`:
 
 ```bash
-~/.dsh/profiles/<profile>/node_modules/.bin/dsh-chatgpt-web setup
+~/.dsh/profiles/<profile>/node_modules/.bin/dsh-chatgpt-web setup --dsh
 ```
 
-A dedicated Chrome/Chromium window will open. Log into your OpenAI / ChatGPT account. Once the ChatGPT composer is visible, the setup captures the session and writes the config and browser state to the plugin's storage directory (default `~/.dsh/storages/chatgpt-web/`).
+A dedicated Chrome/Chromium window will open. Log into your OpenAI / ChatGPT account. Once the composer is visible and the ChatGPT session is authenticated, setup captures the session and writes the config and browser state to the plugin's storage directory (default `~/.dsh/storages/chatgpt-web/`). A guest composer alone is not treated as a successful login.
+
+`--dsh` leaves Codex configuration and OS services untouched; DSH owns the sidecar lifecycle. Existing Codex or DEV storage cannot be repurposed by this command: use a separate `DSH_CHATGPT_WEB_HOME` if needed. Before rerunning setup, stop or disable the sidecar so its port is free. Without `--dsh`, the legacy Codex setup path remains unchanged.
 
 If your browser is not at the default path, pass it explicitly:
 
 ```bash
-~/.dsh/profiles/<profile>/node_modules/.bin/dsh-chatgpt-web setup --chrome /path/to/chrome
+~/.dsh/profiles/<profile>/node_modules/.bin/dsh-chatgpt-web setup --dsh --chrome /path/to/chrome
 ```
 
 #### Using a snap-confined browser (e.g. snap Chromium)
@@ -107,7 +109,7 @@ The fix is to point the plugin's storage home at a **non-hidden** directory usin
 
    ```bash
    DSH_CHATGPT_WEB_HOME="$HOME/dsh-chatgpt-web" \
-     ~/.dsh/profiles/<profile>/node_modules/.bin/dsh-chatgpt-web setup --chrome /snap/bin/chromium
+     ~/.dsh/profiles/<profile>/node_modules/.bin/dsh-chatgpt-web setup --dsh --chrome /snap/bin/chromium
    ```
 
    The browser window opens; log in to ChatGPT. The session is saved under `~/dsh-chatgpt-web/`.

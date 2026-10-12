@@ -454,6 +454,7 @@ export async function loginToChatGpt(
             '[data-testid="prompt-textarea"], #prompt-textarea, [contenteditable="true"][data-lexical-editor="true"], [role="textbox"][aria-label="Ask ChatGPT"], .ProseMirror[contenteditable="true"]',
           ).first();
           if (await composer.isVisible().catch(() => false)) {
+            await assertAuthenticatedChatGptPage(p);
             activePage = p;
             break;
           }

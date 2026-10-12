@@ -20,15 +20,16 @@ Contributions to `dsh-chatgpt-web` are welcome! This plugin provides a zero-cost
    ```bash
    bun install
    ```
-2. Run test suite:
+2. Build bundles (the regression suite also tests the built CLI):
    ```bash
-   bun test
+   bun run build
    ```
 3. Verify TypeScript types:
    ```bash
    bun run typecheck
    ```
-4. Build bundle:
+4. Run regression and clean-package tests:
    ```bash
-   bun run build
+   bun test
+   bun run test
    ```

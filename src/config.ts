@@ -164,7 +164,7 @@ export function validateChatGptWebTuning(value: unknown, path = "config"): ChatG
 
 export interface AppConfig {
   version: 3;
-  purpose?: "dev-harness";
+  purpose?: "dev-harness" | "dsh";
   releaseVersion: string;
   mode: RuntimeMode;
   subagentProtocol: SubagentProtocol;
@@ -400,6 +400,14 @@ export function runtimeCommandForProcess({
     assertDurableRuntimeCommand(command);
     return command;
   }
+  if (executableName === "node" || executableName === "node.exe") {
+    if (!entry || !isAbsolute(entry)) {
+      throw new Error("Node runtime requires an absolute CLI entry path");
+    }
+    const command = [executable, resolve(entry)];
+    assertDurableRuntimeCommand(command);
+    return command;
+  }
   const command = [executable];
   assertDurableRuntimeCommand(command);
   return command;
@@ -471,7 +479,7 @@ function parseConfig(value: unknown, path: string): AppConfig {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(`Invalid configuration object in ${path}`);
   const parsed = value as Partial<AppConfig>;
   if (parsed.version !== 3) throw new Error(`Unsupported configuration version in ${path}; rerun setup to migrate it`);
-  if (parsed.purpose !== undefined && parsed.purpose !== "dev-harness") {
+  if (parsed.purpose !== undefined && parsed.purpose !== "dev-harness" && parsed.purpose !== "dsh") {
     throw new Error(`Invalid configuration purpose in ${path}`);
   }
   if (typeof parsed.releaseVersion !== "string" || !parsed.releaseVersion.trim()) throw new Error(`Missing releaseVersion in ${path}`);

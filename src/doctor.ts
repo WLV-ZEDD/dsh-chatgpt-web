@@ -148,31 +148,35 @@ export async function runDoctor(): Promise<DoctorReport> {
     }
   }
 
-  const codex = inspectCodexIntegration();
-  if (!codex.installed) {
-    checks.push({ id: "codex", status: "error", message: "Codex model route is not installed" });
-  } else if (codex.errors.length > 0) {
-    checks.push({ id: "codex", status: "error", message: "Codex integration is inconsistent", detail: codex.errors.join("; ") });
+  if (config.purpose === "dsh") {
+    checks.push({ id: "service", status: "ok", message: "DSH owns the sidecar; Codex integration and OS services are not required" });
   } else {
-    checks.push({ id: "codex", status: "ok", message: "Codex native model route is installed" });
-  }
+    const codex = inspectCodexIntegration();
+    if (!codex.installed) {
+      checks.push({ id: "codex", status: "error", message: "Codex model route is not installed" });
+    } else if (codex.errors.length > 0) {
+      checks.push({ id: "codex", status: "error", message: "Codex integration is inconsistent", detail: codex.errors.join("; ") });
+    } else {
+      checks.push({ id: "codex", status: "ok", message: "Codex native model route is installed" });
+    }
 
-  const service = getServiceStatus();
-  if (config.browserHost === "launcher") {
-    checks.push(service.installed || service.loaded
-      ? {
-          id: "service",
-          status: "warning",
-          message: "A legacy OS background service still exists; rerun launcher setup to migrate ownership",
-          detail: JSON.stringify(service),
-        }
-      : { id: "service", status: "ok", message: "Launcher owns the background runtime" });
-  } else if (!service.supported) {
-    checks.push({ id: "service", status: "warning", message: "Managed service is unavailable on this OS; keep `serve` running manually" });
-  } else if (!service.installed || !service.loaded) {
-    checks.push({ id: "service", status: "error", message: "macOS background service is not installed and loaded" });
-  } else {
-    checks.push({ id: "service", status: "ok", message: "macOS background service is loaded" });
+    const service = getServiceStatus();
+    if (config.browserHost === "launcher") {
+      checks.push(service.installed || service.loaded
+        ? {
+            id: "service",
+            status: "warning",
+            message: "A legacy OS background service still exists; rerun launcher setup to migrate ownership",
+            detail: JSON.stringify(service),
+          }
+        : { id: "service", status: "ok", message: "Launcher owns the background runtime" });
+    } else if (!service.supported) {
+      checks.push({ id: "service", status: "warning", message: "Managed service is unavailable on this OS; keep `serve` running manually" });
+    } else if (!service.installed || !service.loaded) {
+      checks.push({ id: "service", status: "error", message: "macOS background service is not installed and loaded" });
+    } else {
+      checks.push({ id: "service", status: "ok", message: "macOS background service is loaded" });
+    }
   }
   checks.push(await proxyCheck(config));
 

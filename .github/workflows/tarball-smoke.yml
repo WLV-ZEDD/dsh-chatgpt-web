@@ -32,5 +32,11 @@ jobs:
       - name: Build bundles
         run: bun run build
 
+      - name: Check TypeScript
+        run: bun run typecheck
+
+      - name: Run regression tests
+        run: bun test
+
       - name: Smoke test the packed tarball
         run: npm run test

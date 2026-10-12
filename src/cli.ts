@@ -49,6 +49,7 @@ Options:
   --chrome PATH                Path to Chrome/Chromium executable
   --home PATH                  Override config storage path (default: ~/.dsh/storages/chatgpt-web)
   --login                      Trigger interactive browser login
+  --dsh                        Configure for DSH without changing Codex or OS services
   -h, --help                   Show this help message
   -v, --version                Show version
 `;
@@ -233,6 +234,7 @@ async function setupCommand(args: string[]): Promise<void> {
   let acknowledged = takeFlag(args, "--acknowledge-unofficial");
   const options: SetupOptions = {
     mode: full ? "full" : "browser-only",
+    dsh: takeFlag(args, "--dsh"),
     ...(portRaw ? { port: Number(portRaw) } : {}),
   };
   const automaticBrowserInteraction = takeFlag(args, "--automatic-browser-interaction");
@@ -318,7 +320,8 @@ async function setupCommand(args: string[]): Promise<void> {
   const result = await setup(options);
   stdout.write(`\n✓ DSH ChatGPT Free setup complete (${result.mode})!\n`);
   stdout.write(`Config: ${result.configPath}\n`);
-  stdout.write("\nTo use with DeepSeek Harness, ensure your ~/.dsh/settings.yaml includes:\n\n");
+  if (options.dsh) stdout.write("DSH owns the sidecar. Restart or reload the plugin after setup. Codex settings were not changed.\n");
+  stdout.write("\nTo use with DeepSeek Harness, configure llm-pi-ai.config.providers in ~/.dsh/profiles/<profile>/cordis.patch.yml:\n\n");
   stdout.write("  providers:\n    chatgpt-web:\n      displayName: \"ChatGPT Web (Free)\"\n      api: openai-responses\n      baseURL: http://127.0.0.1:17841/v1\n      headers:\n        Authorization: \"Bearer chatgpt-web-free\"\n      models:\n        - id: chatgpt-web/luna\n          name: \"ChatGPT Web — Luna (Free)\"\n          contextWindow: 1050000\n          maxTokens: 32768\n\n");
 }
 
@@ -516,6 +519,10 @@ async function main(): Promise<void> {
     return;
   }
   const command = args.shift() ?? "help";
+  if (["route", "subagents", "service", "tunnel", "hook", "uninstall"].includes(command)
+    && existsSync(getConfigPath()) && loadConfig().purpose === "dsh") {
+    throw new Error("This configuration is owned by DSH; manage the plugin through DSH instead of Codex or OS service commands");
+  }
   if (command === "dev" && home) {
     throw new Error("--home does not apply to DEV mode; use DSH_CHATGPT_FREE_DEV_HOME for an explicit isolated DEV profile");
   }

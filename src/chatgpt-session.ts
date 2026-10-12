@@ -162,6 +162,25 @@ export async function assertAuthenticatedChatGptPage(page: Page): Promise<void> 
   if (!await anyVisible(composer)) {
     throw new Error("ChatGPT authentication could not be verified: no visible composer is present");
   }
+  if (new URL(page.url()).origin !== "https://chatgpt.com") {
+    throw new Error("ChatGPT authentication could not be verified: unexpected page origin");
+  }
+  const authenticated = await page.evaluate(async () => {
+    try {
+      const response = await fetch("/api/auth/session", {
+        credentials: "include",
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (!response.ok) return false;
+      const session = await response.json();
+      return typeof session?.user?.id === "string" && session.user.id.length > 0;
+    } catch {
+      return false;
+    }
+  });
+  if (!authenticated) {
+    throw new Error("ChatGPT authentication could not be verified: sign in to your account first");
+  }
 }
 
 export async function assertTemporaryChatPage(page: Page): Promise<void> {
