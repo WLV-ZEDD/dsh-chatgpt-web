@@ -39,6 +39,7 @@ import {
 } from "./codex-integration";
 import {
   CHATGPT_WEB_LUNA_BACKEND_MODEL,
+  availableChatGptWebModelRoutes,
   isChatGptWebModelSlug,
   requireChatGptWebModelRoute,
   type ChatGptWebModelRoute,
@@ -386,6 +387,17 @@ export async function modelsRequest(
   fetchUpstream?: NativeFetch,
   contextOverride?: () => CodexModelContextOverride | undefined,
 ): Promise<Response> {
+  if (config.purpose === "dsh") {
+    return Response.json({
+      object: "list",
+      data: availableChatGptWebModelRoutes(config).map(route => ({
+        id: route.slug,
+        object: "model",
+        created: 0,
+        owned_by: "chatgpt-web",
+      })),
+    });
+  }
   let upstream: Response;
   try {
     upstream = await forwardNativeCodexRequest(req, "models", fetchUpstream);
@@ -1112,7 +1124,9 @@ export function startServer(
         try {
           catalogConfig = {
             ...config,
-            subagentProtocol: readCodexSubagentProtocol(config.subagentProtocol),
+            subagentProtocol: config.purpose === "dsh"
+              ? config.subagentProtocol
+              : readCodexSubagentProtocol(config.subagentProtocol),
           };
         } catch (error) {
           return formatErrorResponse(

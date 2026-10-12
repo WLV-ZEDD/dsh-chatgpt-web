@@ -78,15 +78,17 @@ dsh plugin --profile <profile> add github:lordraiden/dsh-chatgpt-web
 进行一次性的 ChatGPT 账号登录验证。插件可执行文件位于 profile 的 `node_modules/.bin` 中：
 
 ```bash
-~/.dsh/profiles/<profile>/node_modules/.bin/dsh-chatgpt-web setup
+~/.dsh/profiles/<profile>/node_modules/.bin/dsh-chatgpt-web setup --dsh
 ```
 
-系统将打开专用的 Chrome/Chromium 窗口。登录你的 OpenAI / ChatGPT 账号。一旦看到 ChatGPT 输入框，setup 会捕获会话，并将配置和浏览器状态写入插件的存储目录（默认 `~/.dsh/storages/chatgpt-web/`）。
+系统将打开专用的 Chrome/Chromium 窗口。登录你的 OpenAI / ChatGPT 账号。输入框可见且 ChatGPT 会话通过登录验证后，setup 才会捕获会话，并将配置和浏览器状态写入插件的存储目录（默认 `~/.dsh/storages/chatgpt-web/`）。仅有游客输入框不会被视为登录成功。
+
+`--dsh` 不修改 Codex 配置，也不安装操作系统服务，后台 Sidecar 由 DSH 管理。该命令拒绝将已有 Codex 或 DEV 存储改为 DSH 用途；需要并存时，请指定独立的 `DSH_CHATGPT_WEB_HOME`。再次运行 setup 前，请停止或禁用 Sidecar，确保端口空闲。不带 `--dsh` 时，保留原有 Codex 配置流程。
 
 如果你的浏览器不在默认路径，请显式传入：
 
 ```bash
-~/.dsh/profiles/<profile>/node_modules/.bin/dsh-chatgpt-web setup --chrome /path/to/chrome
+~/.dsh/profiles/<profile>/node_modules/.bin/dsh-chatgpt-web setup --dsh --chrome /path/to/chrome
 ```
 
 #### 使用受 snap 沙箱限制的浏览器（例如 snap 版 Chromium）
@@ -107,7 +109,7 @@ Failed to create .../login-profile-XXXX/SingletonLock: Permission denied (13)
 
    ```bash
    DSH_CHATGPT_WEB_HOME="$HOME/dsh-chatgpt-web" \
-     ~/.dsh/profiles/<profile>/node_modules/.bin/dsh-chatgpt-web setup --chrome /snap/bin/chromium
+     ~/.dsh/profiles/<profile>/node_modules/.bin/dsh-chatgpt-web setup --dsh --chrome /snap/bin/chromium
    ```
 
    浏览器窗口会打开；登录 ChatGPT。会话将保存在 `~/dsh-chatgpt-web/` 下。
