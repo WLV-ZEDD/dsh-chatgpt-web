@@ -21,7 +21,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -73,10 +73,12 @@ try {
   // 3. Install the tarball in the clean directory. Bun is the repository's
   //    package manager and is available in CI; fall back to npm.
   console.log("Installing tarball into a clean directory...");
-  const bunProbe = run("bun", ["--version"]);
+  const winBun = join(homedir(), ".bun", "bin", "bun.exe");
+  const bunCmd = existsSync(winBun) ? winBun : "bun";
+  const bunProbe = run(bunCmd, ["--version"]);
   const installer =
     bunProbe.status === 0
-      ? ["bun", "install", tarball]
+      ? [bunCmd, "install", tarball]
       : ["npm", "install", tarball, "--no-audit", "--no-fund", "--loglevel", "error"];
   const install = run(installer[0], installer.slice(1), { cwd: cleanDir });
   if (install.status !== 0) {
@@ -89,7 +91,11 @@ try {
   const binPath = join(cleanDir, "node_modules", ".bin", "dsh-chatgpt-web");
 
   // 4. Locate the installed binary and run --help from it.
-  if (!existsSync(binPath)) {
+  const binCandidates = process.platform === "win32"
+    ? [binPath, `${binPath}.cmd`, `${binPath}.ps1`, `${binPath}.exe`, join(pkgDir, "lib", "cli.js")]
+    : [binPath];
+  const foundBin = binCandidates.find((p) => existsSync(p));
+  if (!foundBin) {
     fail(`installed binary not found at ${binPath}`);
   } else {
     const binTarget = process.platform === "win32" ? join(pkgDir, "lib", "cli.js") : binPath;
@@ -100,6 +106,17 @@ try {
       fail(`--help output missing usage section: ${help.stdout.trim().slice(0, 200)}`);
     } else {
       ok("--help runs from the clean install");
+    }
+
+    if (bunProbe.status === 0) {
+      const bunHelp = run(bunCmd, [binTarget, "--help"], { cwd: cleanDir });
+      if (bunHelp.status !== 0) {
+        fail(`bun --help failed (exit ${bunHelp.status}): ${(bunHelp.stderr || bunHelp.stdout).trim().slice(-400)}`);
+      } else if (!/Usage:/.test(bunHelp.stdout)) {
+        fail(`bun --help output missing usage section: ${bunHelp.stdout.trim().slice(0, 200)}`);
+      } else {
+        ok("bun --help runs from the clean install (issue #4 yazl check)");
+      }
     }
   }
 

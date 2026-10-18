@@ -53,11 +53,30 @@ function resolveLauncher(customBunPath?: string): { cmd: string; args: string[] 
     return { cmd: winBun, args: ["run", "src/cli.ts", "serve"] };
   }
 
-  const tsxPath = resolve(ROOT_DIR, "../deepseek-harness/node_modules/tsx/dist/esm/index.mjs");
-  if (existsSync(tsxPath)) {
+  // Portable Node ESM resolution for tsx
+  try {
+    const tsxUrl = import.meta.resolve("tsx");
     return {
       cmd: process.execPath,
-      args: ["--import", pathToFileURL(tsxPath).href, "src/cli.ts", "serve"],
+      args: ["--import", tsxUrl, "src/cli.ts", "serve"],
+    };
+  } catch {
+    // tsx not resolvable via standard ESM package resolution
+  }
+
+  const localTsx = resolve(ROOT_DIR, "node_modules/tsx/dist/esm/index.mjs");
+  if (existsSync(localTsx)) {
+    return {
+      cmd: process.execPath,
+      args: ["--import", pathToFileURL(localTsx).href, "src/cli.ts", "serve"],
+    };
+  }
+
+  const siblingTsx = resolve(ROOT_DIR, "../deepseek-harness/node_modules/tsx/dist/esm/index.mjs");
+  if (existsSync(siblingTsx)) {
+    return {
+      cmd: process.execPath,
+      args: ["--import", pathToFileURL(siblingTsx).href, "src/cli.ts", "serve"],
     };
   }
 
