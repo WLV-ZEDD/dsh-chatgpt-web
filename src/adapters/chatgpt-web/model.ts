@@ -1,9 +1,11 @@
 import {
   CHATGPT_WEB_BACKEND_MODEL,
+  CHATGPT_WEB_GPT6_BACKEND_MODEL,
   CHATGPT_WEB_LUNA_BACKEND_MODEL,
 } from "../../chatgpt-web-models";
 
 export const CHATGPT_WEB_MODEL_ID = CHATGPT_WEB_BACKEND_MODEL;
+export const CHATGPT_WEB_GPT6_MODEL_ID = CHATGPT_WEB_GPT6_BACKEND_MODEL;
 export const CHATGPT_WEB_LUNA_MODEL_ID = CHATGPT_WEB_LUNA_BACKEND_MODEL;
 
 export interface ChatGptWebCapabilities {
@@ -44,7 +46,7 @@ export function resolveChatGptWebModelMode(
       localTools: capabilities.localToolsEnabled,
     };
   }
-  if (modelId !== CHATGPT_WEB_MODEL_ID) {
+  if (modelId !== CHATGPT_WEB_MODEL_ID && modelId !== CHATGPT_WEB_GPT6_MODEL_ID) {
     throw new Error(`ChatGPT web model is not supported: ${modelId}`);
   }
   if (!capabilities.solAvailable) {

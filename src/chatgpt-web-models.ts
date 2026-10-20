@@ -1,6 +1,9 @@
 export const CHATGPT_WEB_MODEL_PREFIX = "chatgpt-web/";
 export const CHATGPT_WEB_BACKEND_MODEL = "gpt-5.6-sol";
 export const CHATGPT_WEB_LUNA_BACKEND_MODEL = "gpt-5.6-luna";
+/** GPT-6 appears in the Plus picker (2026-10) alongside GPT-5.6 Sol. Selecting it is a
+ *  pure browser-UI action (click the model row), so it needs no extra transport window. */
+export const CHATGPT_WEB_GPT6_BACKEND_MODEL = "gpt-6";
 /** Internal adapter identity for a turn whose ChatGPT model is selected by the user in the launcher. */
 export const CHATGPT_WEB_ZERO_RISK_BACKEND_MODEL = "chatgpt-web-zero-risk";
 /** Internal adapter identity for the explicitly enabled, Pro-sized Zero Risk context profile. */
@@ -8,7 +11,8 @@ export const CHATGPT_WEB_ZERO_RISK_PRO_BACKEND_MODEL = "chatgpt-web-zero-risk-pr
 
 export type ChatGptWebAutomaticBackendModel =
   | typeof CHATGPT_WEB_BACKEND_MODEL
-  | typeof CHATGPT_WEB_LUNA_BACKEND_MODEL;
+  | typeof CHATGPT_WEB_LUNA_BACKEND_MODEL
+  | typeof CHATGPT_WEB_GPT6_BACKEND_MODEL;
 export type ChatGptWebBackendModel =
   | ChatGptWebAutomaticBackendModel
   | ChatGptWebZeroRiskBackendModel;
@@ -315,6 +319,16 @@ export const CHATGPT_WEB_MODEL_ROUTES: readonly ChatGptWebAutomaticModelRoute[] 
     description: "ChatGPT Web High through the native Codex harness.",
     interactionMode: "automatic",
     backendModel: CHATGPT_WEB_BACKEND_MODEL,
+    codexEffort: "high",
+    adapterEffort: "high",
+    requiresPro: false,
+  },
+  {
+    slug: "chatgpt-web/gpt-6",
+    displayName: "ChatGPT Web — GPT-6",
+    description: "ChatGPT GPT-6 through the native Codex harness (Plus picker, 2026-10).",
+    interactionMode: "automatic",
+    backendModel: CHATGPT_WEB_GPT6_BACKEND_MODEL,
     codexEffort: "high",
     adapterEffort: "high",
     requiresPro: false,

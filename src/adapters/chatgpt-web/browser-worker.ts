@@ -2371,9 +2371,10 @@ export class ChatGptBrowserWorker {
       ]);
       if (ready === "rate-limit") await throwIfChatGptRateLimitDialog(page);
       if (ready === "session-expired") await throwIfChatGptSessionFailureAlert(page);
-      // The current picker exposes model rows as menuitemradio alongside the effort slider.
-      // Those rows can win the locator race even though they are not effort choices.
-      if (ready !== "slider" && await effortSlider.isVisible().catch(() => false)) ready = "slider";
+      // The current picker exposes model rows as menuitemradio ALONGSIDE the effort slider.
+      // Those rows are models, not effort choices, so a visible slider is authoritative:
+      // we drive effort with arrow keys and never index the rows.
+      if (await effortSlider.isVisible().catch(() => false)) ready = "slider";
       await captureDiagnostic?.(ready === "slider" ? "effort-slider-visible" : "effort-choice-visible");
     } catch (error) {
       if (error instanceof ChatGptWebAdapterError) throw error;
