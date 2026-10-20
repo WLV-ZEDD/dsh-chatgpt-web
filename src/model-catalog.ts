@@ -52,7 +52,7 @@ function routedModelPriority(
     throw new Error("Native Codex model template priority cannot reserve the Compatibility V1 roster");
   }
   // Codex V1 exposes at most five model overrides. Keep the native Sol row plus the four useful
-  // delegated Web efforts (Medium, High, Extra High, Pro); Instant remains a selectable root model
+  // delegated Web efforts (中等 / 高 / 超高 / Pro); 即时 remains a selectable root model
   // but does not displace Pro from spawn_agent's bounded registry.
   return priority + 1;
 }
