@@ -2398,17 +2398,18 @@ export class ChatGptBrowserWorker {
           "ChatGPT effort slider exposed an invalid ARIA range",
         );
       }
-      const targetValue = sliderState.min + uiEffortIndex;
-      if (targetValue > sliderState.max) {
-        const proUsageLimitHint = uiEffortIndex === 4 && sliderState.min === 0 && sliderState.max === 3
-          ? " If you have made many Pro requests recently, ChatGPT may have temporarily hidden Pro because you reached its usage limit."
-          : "";
+      // The Plus picker only exposes three stops (Low/Medium/High). If the caller requested a
+      // higher stop that the UI cannot reach, reject it here instead of letting the slider
+      // loop fail silently or silently cap to a lower level.
+      const requestedStop = sliderState.min + uiEffortIndex;
+      if (requestedStop > sliderState.max) {
         throw chatGptModelControlUnavailableAdapterError(
           `ChatGPT effort slider does not expose item index ${uiEffortIndex}`
           + ` (min=${sliderState.min}; max=${sliderState.max})`
-          + proUsageLimitHint,
+          + ". This account's picker exposes three effort stops only.",
         );
       }
+      const targetValue = requestedStop;
       const sliderControl = effortSlider.locator("xpath=ancestor::*[@role='menuitem'][1]");
       while (sliderState.value !== targetValue) {
         await throwIfChatGptRateLimitDialog(page);

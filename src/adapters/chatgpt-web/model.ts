@@ -60,6 +60,8 @@ export function resolveChatGptWebModelMode(
       return { modelId, effort, displayLabel: "Medium", uiEffortIndex: 1, thinkEnabled: false, localTools: capabilities.localToolsEnabled };
     case "high":
       return { modelId, effort, displayLabel: "High", uiEffortIndex: 2, thinkEnabled: false, localTools: capabilities.localToolsEnabled };
+    // The Plus picker exposes only three effort stops (Low/Medium/High). Higher stops are
+    // Pro-account only; this check runs before the turn reaches the browser layer.
     case "xhigh":
       if (!capabilities.proAvailable) throw new Error("ChatGPT Extra High effort is not available for this account");
       return { modelId, effort, displayLabel: "Extra High", uiEffortIndex: 3, thinkEnabled: false, localTools: capabilities.localToolsEnabled };
