@@ -24,6 +24,7 @@ import {
   type ChatGptMarkdownSegment,
 } from "./markdown";
 import {
+  CHATGPT_WEB_GPT6_MODEL_ID,
   CHATGPT_WEB_LUNA_MODEL_ID,
   CHATGPT_WEB_MODEL_ID,
   resolveChatGptWebModelMode,
@@ -879,7 +880,11 @@ export function assertChatGptWebInputWithinLimits(
   promptChars?: number,
   composerCharLimitOverride?: number,
 ): void {
-  if (modelId !== CHATGPT_WEB_MODEL_ID && modelId !== CHATGPT_WEB_LUNA_MODEL_ID) {
+  if (
+    modelId !== CHATGPT_WEB_MODEL_ID
+    && modelId !== CHATGPT_WEB_LUNA_MODEL_ID
+    && modelId !== CHATGPT_WEB_GPT6_MODEL_ID
+  ) {
     throw new Error(`ChatGPT web context limit is not defined for model: ${modelId}`);
   }
   if (
@@ -945,7 +950,8 @@ export function assertChatGptWebMultipartInputWithinLimits(
       { status: 400, errorType: "invalid_request_error", code: "context_length_exceeded", retryable: false },
     );
   }
-  if (modelId !== CHATGPT_WEB_MODEL_ID) {
+  // GPT-6 shares the Sol-class Plus transport windows, so Bigger Context applies to it too.
+  if (modelId !== CHATGPT_WEB_MODEL_ID && modelId !== CHATGPT_WEB_GPT6_MODEL_ID) {
     throw new Error(`ChatGPT Bigger Context limit is not defined for model: ${modelId}`);
   }
   const { contextWindow: baseContextWindow } = resolveChatGptWebContextLimits(
@@ -1016,7 +1022,7 @@ export function resolveChatGptWebMultipartStagingMode(
       { status: 400, errorType: "invalid_request_error", code: "context_length_exceeded", retryable: false },
     );
   }
-  if (modelId !== CHATGPT_WEB_MODEL_ID) {
+  if (modelId !== CHATGPT_WEB_MODEL_ID && modelId !== CHATGPT_WEB_GPT6_MODEL_ID) {
     throw new Error(`ChatGPT Bigger Context staging mode is not defined for model: ${modelId}`);
   }
   const efforts: readonly ChatGptWebModelMode["effort"][] = capabilities.proAvailable
