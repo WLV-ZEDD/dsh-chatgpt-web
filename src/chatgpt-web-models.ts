@@ -1,6 +1,9 @@
 export const CHATGPT_WEB_MODEL_PREFIX = "chatgpt-web/";
 export const CHATGPT_WEB_BACKEND_MODEL = "gpt-5.6-sol";
 export const CHATGPT_WEB_LUNA_BACKEND_MODEL = "gpt-5.6-luna";
+/** GPT-6 appears in the Plus picker (2026-10) alongside GPT-5.6 Sol. Selecting it is a
+ *  pure browser-UI action (click the model row), so it needs no extra transport window. */
+export const CHATGPT_WEB_GPT6_BACKEND_MODEL = "gpt-6";
 /** Internal adapter identity for a turn whose ChatGPT model is selected by the user in the launcher. */
 export const CHATGPT_WEB_ZERO_RISK_BACKEND_MODEL = "chatgpt-web-zero-risk";
 /** Internal adapter identity for the explicitly enabled, Pro-sized Zero Risk context profile. */
@@ -8,7 +11,8 @@ export const CHATGPT_WEB_ZERO_RISK_PRO_BACKEND_MODEL = "chatgpt-web-zero-risk-pr
 
 export type ChatGptWebAutomaticBackendModel =
   | typeof CHATGPT_WEB_BACKEND_MODEL
-  | typeof CHATGPT_WEB_LUNA_BACKEND_MODEL;
+  | typeof CHATGPT_WEB_LUNA_BACKEND_MODEL
+  | typeof CHATGPT_WEB_GPT6_BACKEND_MODEL;
 export type ChatGptWebBackendModel =
   | ChatGptWebAutomaticBackendModel
   | ChatGptWebZeroRiskBackendModel;
@@ -291,8 +295,8 @@ export const CHATGPT_WEB_LUNA_MODEL_ROUTES: readonly ChatGptWebModelRoute[] = [
 export const CHATGPT_WEB_MODEL_ROUTES: readonly ChatGptWebAutomaticModelRoute[] = [
   {
     slug: "chatgpt-web/light",
-    displayName: "ChatGPT Web — Instant",
-    description: "ChatGPT Web Instant through the native Codex harness.",
+    displayName: "ChatGPT Web — GPT-5.6 Sol 即时",
+    description: "通过原生 Codex 通道的 ChatGPT Web 即时档。",
     interactionMode: "automatic",
     backendModel: CHATGPT_WEB_BACKEND_MODEL,
     codexEffort: "low",
@@ -301,8 +305,8 @@ export const CHATGPT_WEB_MODEL_ROUTES: readonly ChatGptWebAutomaticModelRoute[] 
   },
   {
     slug: "chatgpt-web/medium",
-    displayName: "ChatGPT Web — Medium",
-    description: "ChatGPT Web Medium through the native Codex harness.",
+    displayName: "ChatGPT Web — GPT-5.6 Sol 中等",
+    description: "通过原生 Codex 通道的 ChatGPT Web 中等档。",
     interactionMode: "automatic",
     backendModel: CHATGPT_WEB_BACKEND_MODEL,
     codexEffort: "medium",
@@ -311,8 +315,8 @@ export const CHATGPT_WEB_MODEL_ROUTES: readonly ChatGptWebAutomaticModelRoute[] 
   },
   {
     slug: "chatgpt-web/high",
-    displayName: "ChatGPT Web — High",
-    description: "ChatGPT Web High through the native Codex harness.",
+    displayName: "ChatGPT Web — GPT-5.6 Sol 高",
+    description: "通过原生 Codex 通道的 ChatGPT Web 高档。",
     interactionMode: "automatic",
     backendModel: CHATGPT_WEB_BACKEND_MODEL,
     codexEffort: "high",
@@ -320,9 +324,39 @@ export const CHATGPT_WEB_MODEL_ROUTES: readonly ChatGptWebAutomaticModelRoute[] 
     requiresPro: false,
   },
   {
+    slug: "chatgpt-web/gpt-6-light",
+    displayName: "ChatGPT Web — GPT-6 即时",
+    description: "通过原生 Codex 通道的 ChatGPT GPT-6 即时档（Plus 选择器，2026-10）。",
+    interactionMode: "automatic",
+    backendModel: CHATGPT_WEB_GPT6_BACKEND_MODEL,
+    codexEffort: "low",
+    adapterEffort: "low",
+    requiresPro: false,
+  },
+  {
+    slug: "chatgpt-web/gpt-6-medium",
+    displayName: "ChatGPT Web — GPT-6 中等",
+    description: "通过原生 Codex 通道的 ChatGPT GPT-6 中等档（Plus 选择器，2026-10）。",
+    interactionMode: "automatic",
+    backendModel: CHATGPT_WEB_GPT6_BACKEND_MODEL,
+    codexEffort: "medium",
+    adapterEffort: "medium",
+    requiresPro: false,
+  },
+  {
+    slug: "chatgpt-web/gpt-6-high",
+    displayName: "ChatGPT Web — GPT-6 高",
+    description: "通过原生 Codex 通道的 ChatGPT GPT-6 高档（Plus 选择器，2026-10）。",
+    interactionMode: "automatic",
+    backendModel: CHATGPT_WEB_GPT6_BACKEND_MODEL,
+    codexEffort: "high",
+    adapterEffort: "high",
+    requiresPro: false,
+  },
+  {
     slug: "chatgpt-web/extra-high",
-    displayName: "ChatGPT Web — Extra High",
-    description: "Account-gated ChatGPT Web Extra High through the native Codex harness.",
+    displayName: "ChatGPT Web — 超高",
+    description: "按账号开放的超高档 ChatGPT Web（通过原生 Codex 通道）。",
     interactionMode: "automatic",
     backendModel: CHATGPT_WEB_BACKEND_MODEL,
     codexEffort: "xhigh",
@@ -332,7 +366,7 @@ export const CHATGPT_WEB_MODEL_ROUTES: readonly ChatGptWebAutomaticModelRoute[] 
   {
     slug: "chatgpt-web/pro",
     displayName: "ChatGPT Web — Pro",
-    description: "Account-gated ChatGPT Pro through the native Codex harness.",
+    description: "按账号开放的 ChatGPT Pro（通过原生 Codex 通道）。",
     interactionMode: "automatic",
     backendModel: CHATGPT_WEB_BACKEND_MODEL,
     codexEffort: "ultra",

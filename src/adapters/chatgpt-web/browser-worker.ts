@@ -24,6 +24,7 @@ import {
   type ChatGptMarkdownSegment,
 } from "./markdown";
 import {
+  CHATGPT_WEB_GPT6_MODEL_ID,
   CHATGPT_WEB_LUNA_MODEL_ID,
   CHATGPT_WEB_MODEL_ID,
   resolveChatGptWebModelMode,
@@ -879,7 +880,11 @@ export function assertChatGptWebInputWithinLimits(
   promptChars?: number,
   composerCharLimitOverride?: number,
 ): void {
-  if (modelId !== CHATGPT_WEB_MODEL_ID && modelId !== CHATGPT_WEB_LUNA_MODEL_ID) {
+  if (
+    modelId !== CHATGPT_WEB_MODEL_ID
+    && modelId !== CHATGPT_WEB_LUNA_MODEL_ID
+    && modelId !== CHATGPT_WEB_GPT6_MODEL_ID
+  ) {
     throw new Error(`ChatGPT web context limit is not defined for model: ${modelId}`);
   }
   if (
@@ -945,7 +950,8 @@ export function assertChatGptWebMultipartInputWithinLimits(
       { status: 400, errorType: "invalid_request_error", code: "context_length_exceeded", retryable: false },
     );
   }
-  if (modelId !== CHATGPT_WEB_MODEL_ID) {
+  // GPT-6 shares the Sol-class Plus transport windows, so Bigger Context applies to it too.
+  if (modelId !== CHATGPT_WEB_MODEL_ID && modelId !== CHATGPT_WEB_GPT6_MODEL_ID) {
     throw new Error(`ChatGPT Bigger Context limit is not defined for model: ${modelId}`);
   }
   const { contextWindow: baseContextWindow } = resolveChatGptWebContextLimits(
@@ -1016,7 +1022,7 @@ export function resolveChatGptWebMultipartStagingMode(
       { status: 400, errorType: "invalid_request_error", code: "context_length_exceeded", retryable: false },
     );
   }
-  if (modelId !== CHATGPT_WEB_MODEL_ID) {
+  if (modelId !== CHATGPT_WEB_MODEL_ID && modelId !== CHATGPT_WEB_GPT6_MODEL_ID) {
     throw new Error(`ChatGPT Bigger Context staging mode is not defined for model: ${modelId}`);
   }
   const efforts: readonly ChatGptWebModelMode["effort"][] = capabilities.proAvailable
@@ -2371,9 +2377,10 @@ export class ChatGptBrowserWorker {
       ]);
       if (ready === "rate-limit") await throwIfChatGptRateLimitDialog(page);
       if (ready === "session-expired") await throwIfChatGptSessionFailureAlert(page);
-      // The current picker exposes model rows as menuitemradio alongside the effort slider.
-      // Those rows can win the locator race even though they are not effort choices.
-      if (ready !== "slider" && await effortSlider.isVisible().catch(() => false)) ready = "slider";
+      // The current picker exposes model rows as menuitemradio ALONGSIDE the effort slider.
+      // Those rows are models, not effort choices, so a visible slider is authoritative:
+      // we drive effort with arrow keys and never index the rows.
+      if (await effortSlider.isVisible().catch(() => false)) ready = "slider";
       await captureDiagnostic?.(ready === "slider" ? "effort-slider-visible" : "effort-choice-visible");
     } catch (error) {
       if (error instanceof ChatGptWebAdapterError) throw error;
@@ -2397,17 +2404,18 @@ export class ChatGptBrowserWorker {
           "ChatGPT effort slider exposed an invalid ARIA range",
         );
       }
-      const targetValue = sliderState.min + uiEffortIndex;
-      if (targetValue > sliderState.max) {
-        const proUsageLimitHint = uiEffortIndex === 4 && sliderState.min === 0 && sliderState.max === 3
-          ? " If you have made many Pro requests recently, ChatGPT may have temporarily hidden Pro because you reached its usage limit."
-          : "";
+      // The Plus picker only exposes three stops (Low/Medium/High). If the caller requested a
+      // higher stop that the UI cannot reach, reject it here instead of letting the slider
+      // loop fail silently or silently cap to a lower level.
+      const requestedStop = sliderState.min + uiEffortIndex;
+      if (requestedStop > sliderState.max) {
         throw chatGptModelControlUnavailableAdapterError(
           `ChatGPT effort slider does not expose item index ${uiEffortIndex}`
           + ` (min=${sliderState.min}; max=${sliderState.max})`
-          + proUsageLimitHint,
+          + ". This account's picker exposes three effort stops only.",
         );
       }
+      const targetValue = requestedStop;
       const sliderControl = effortSlider.locator("xpath=ancestor::*[@role='menuitem'][1]");
       while (sliderState.value !== targetValue) {
         await throwIfChatGptRateLimitDialog(page);

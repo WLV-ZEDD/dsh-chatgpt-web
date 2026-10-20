@@ -12,14 +12,24 @@ export const CHATGPT_COMPOSER_SELECTOR = [
 export const CHATGPT_EFFORT_CONTROL_SELECTOR = [
   'button[aria-haspopup="menu"][data-tone="neutral"]',
   'button[data-testid="model-switcher-dropdown-button"][aria-haspopup="menu"]',
+  // 2026-10 UI: a plain button whose stable hooks are aria-haspopup="menu" plus a localized
+  // aria-label. Match the zh label and a bilingual pattern so the probe does not silently
+  // degrade to a Luna-only account on non-English UI.
+  'button[aria-haspopup="menu"][aria-label="选择 ChatGPT 模型"]',
+  'button[aria-haspopup="menu"][aria-label*="ChatGPT"][aria-label*="model" i]',
 ].join(", ");
 export const CHATGPT_EFFORT_MENU_SELECTOR = [
-  '[data-testid="composer-intelligence-picker-content"]:has([role="menuitemradio"], [data-model-reasoning-effort-slider])',
-  '[role="menu"]:has([role="menuitemradio"], [data-model-reasoning-effort-slider])',
-  '[role="group"]:has([role="menuitemradio"], [data-model-reasoning-effort-slider])',
+  '[data-testid="composer-intelligence-picker-content"]:has([role="menuitemradio"], [data-model-reasoning-effort-slider], [data-model-picker-power-slider])',
+  '[role="menu"]:has([role="menuitemradio"], [data-model-reasoning-effort-slider], [data-model-picker-power-slider])',
+  '[role="group"]:has([role="menuitemradio"], [data-model-reasoning-effort-slider], [data-model-picker-power-slider])',
 ].join(", ");
 export const CHATGPT_EFFORT_ITEM_SELECTOR = '[role="menuitemradio"]';
-export const CHATGPT_EFFORT_SLIDER_SELECTOR = '[data-model-reasoning-effort-slider] [role="slider"]';
+// 2026-10 UI renamed the wrapper attribute to data-model-picker-power-slider. Keep the old
+// anchor so a rollback still resolves the slider.
+export const CHATGPT_EFFORT_SLIDER_SELECTOR = [
+  '[data-model-picker-power-slider] [role="slider"]',
+  '[data-model-reasoning-effort-slider] [role="slider"]',
+].join(", ");
 export const CHATGPT_EFFORT_SLIDER_MAX_OPTIONS = 5;
 export const CHATGPT_STOP_BUTTON_SELECTOR = [
   '[data-testid="stop-button"]',
