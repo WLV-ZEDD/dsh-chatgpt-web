@@ -8,7 +8,7 @@
 [![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-Cordis%20Plugin-0078d4?style=flat)](https://github.com/deepseek-ai/deepseek-harness)
 [![Mode](https://img.shields.io/badge/Mode-Pure%20Chat%20%26%20Markdown-success?style=flat)](./README.zh-CN.md#%E6%A6%82%E8%BF%B0)
 
-> **基于免费 ChatGPT Web（GPT 5.6 Luna）驱动的 DeepSeek Harness 零成本对话 AI 模型提供者。**
+> **基于免费 ChatGPT Web（GPT-6 Luna）驱动的 DeepSeek Harness 零成本对话 AI 模型提供者。**
 
 <p align="center">
   <img src="./assets/hero-demo.png" alt="dsh-chatgpt-web 在 DeepSeek Harness 中" width="100%">
@@ -40,7 +40,7 @@
 
 ### 为什么选择纯对话模式（Pure Chat）？
 
-轻量级对话网页模型（如 GPT 5.6 Luna）非常擅长解释、对话、问答、头脑风暴、代码片段生成以及侧边助手任务。通过运行在 **纯对话模式** 下，该桥接器消除了提示词开销、工具幻觉以及自主多工具循环中的语法错误，提供快速、稳定且零成本的 LLM 提供者。
+轻量级对话网页模型（如 GPT-6 Luna）非常擅长解释、对话、问答、头脑风暴、代码片段生成以及侧边助手任务。通过运行在 **纯对话模式** 下，该桥接器消除了提示词开销、工具幻觉以及自主多工具循环中的语法错误，提供快速、稳定且零成本的 LLM 提供者。
 
 ### 核心功能
 

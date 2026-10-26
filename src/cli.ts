@@ -33,7 +33,7 @@ import { runDevCommand } from "./dev-chat/cli";
 
 const HELP = `dsh-chatgpt-web ${VERSION}
 
-DeepSeek Harness bridge & Cordis plugin for free ChatGPT Web (GPT 5.6 Luna) pure chat and zero API fees.
+DeepSeek Harness bridge & Cordis plugin for free ChatGPT Web (GPT-6 Luna) pure chat and zero API fees.
 
 Usage:
   dsh-chatgpt-web setup [options]
