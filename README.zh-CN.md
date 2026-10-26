@@ -3,7 +3,8 @@
 [English](./README.md) | [中文](./README.zh-CN.md)
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](./LICENSE)
-[![tarball smoke](https://img.shields.io/github/actions/workflow/status/lordraiden/dsh-chatgpt-web/tarball-smoke.yml?style=flat&label=tarball%20smoke)](https://github.com/lordraiden/dsh-chatgpt-web/actions/workflows/tarball-smoke.yml)
+[![npm version](https://img.shields.io/npm/v/@wlv-zedd/dsh-chatgpt-web.svg?style=flat)](https://www.npmjs.com/package/@wlv-zedd/dsh-chatgpt-web)
+[![tarball smoke](https://img.shields.io/github/actions/workflow/status/WLV-ZEDD/dsh-chatgpt-web/tarball-smoke.yml?style=flat&label=tarball%20smoke)](https://github.com/WLV-ZEDD/dsh-chatgpt-web/actions/workflows/tarball-smoke.yml)
 [![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-Cordis%20Plugin-0078d4?style=flat)](https://github.com/deepseek-ai/deepseek-harness)
 [![Mode](https://img.shields.io/badge/Mode-Pure%20Chat%20%26%20Markdown-success?style=flat)](./README.zh-CN.md#%E6%A6%82%E8%BF%B0)
 
@@ -46,8 +47,8 @@
 - **100% 完全免费（$0.00 成本）：** 使用你现有的免费 ChatGPT 网页会话，无需 OpenAI API Key 或信用卡。
 - **Cordis 插件优先生命周期：** 由 DSH 通过 `ctx.effect` 管理。DeepSeek Harness 在启动时自动拉起后台 Sidecar 进程，并在退出时安全关闭。
 - **动态模型自动检测：** 自动检测你的 ChatGPT 账户等级：
-  - **免费账户：** 默认为 `chatgpt-web/luna`（`gpt-5-6-luna`）。
-  - **Plus / Team 账户：** 自动检测并暴露可用的付费模型（如 `gpt-4o`、`o1`）。
+  - **免费账户：** 默认为 `chatgpt-web/luna`（`gpt-5-6-luna`）以及 `chatgpt-web/think`。
+  - **Plus / Team 账户：** 自动检测并暴露 **GPT-6**（`chatgpt-web/gpt-6-light`、`medium`、`high`）以及 **GPT-5.6 Sol**（`chatgpt-web/light`、`medium`、`high`），并在可用时支持 Pro 档位。
 - **完整流式 Markdown 与代码块：** 实时向 DSH Web UI 或 CLI 投递生成的内容。
 - **可移植且经过校验的发布产物：** 发布的 tarball 在到达仓库（registry）之前会由 CI 校验（干净安装、运行时冒烟测试、依赖解析、无构建环境路径污染）。
 
@@ -68,7 +69,11 @@
 直接从本 GitHub 仓库安装：
 
 ```bash
-dsh plugin --profile <profile> add github:lordraiden/dsh-chatgpt-web
+# 通过 npm 仓库安装（推荐）：
+dsh plugin --profile <profile> add @wlv-zedd/dsh-chatgpt-web
+
+# 或直接从 GitHub 仓库安装：
+dsh plugin --profile <profile> add github:WLV-ZEDD/dsh-chatgpt-web
 ```
 
 这会将插件注册到 profile 的 `package.json` bundles 中，其 Cordis 条目会被自动组合——无需手动 `insert`。

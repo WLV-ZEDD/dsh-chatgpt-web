@@ -72,6 +72,11 @@ dsh-chatgpt-web setup --chrome "C:\Program Files\Google\Chrome\Application\chrom
 - Wait for the rate-limit window to reset (typically 1–2 hours).
 - Avoid spawning parallel multi-subagent requests against a single ChatGPT browser tab.
 
+### 7. Send Button Stage Timeout in Temporary Chat
+**Cause:** In `?temporary-chat=true`, ChatGPT DOM occasionally renders the prompt composer in a container element without a standard `<form>` ancestor, or localized Chinese UI uses `aria-label="发送消息"`.
+**Solution:**
+- Upgrade to `dsh-chatgpt-web` `>=1.0.5`, which includes multi-strategy send button resolution and localized aria-label fallbacks.
+
 ## Update and Uninstall
 
 To update `dsh-chatgpt-web`, pull the latest changes and rebuild:

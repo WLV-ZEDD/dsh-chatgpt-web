@@ -3,7 +3,8 @@
 [English](./README.md) | [中文](./README.zh-CN.md)
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](./LICENSE)
-[![tarball smoke](https://img.shields.io/github/actions/workflow/status/lordraiden/dsh-chatgpt-web/tarball-smoke.yml?style=flat&label=tarball%20smoke)](https://github.com/lordraiden/dsh-chatgpt-web/actions/workflows/tarball-smoke.yml)
+[![npm version](https://img.shields.io/npm/v/@wlv-zedd/dsh-chatgpt-web.svg?style=flat)](https://www.npmjs.com/package/@wlv-zedd/dsh-chatgpt-web)
+[![tarball smoke](https://img.shields.io/github/actions/workflow/status/WLV-ZEDD/dsh-chatgpt-web/tarball-smoke.yml?style=flat&label=tarball%20smoke)](https://github.com/WLV-ZEDD/dsh-chatgpt-web/actions/workflows/tarball-smoke.yml)
 [![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-Cordis%20Plugin-0078d4?style=flat)](https://github.com/deepseek-ai/deepseek-harness)
 [![Mode](https://img.shields.io/badge/Mode-Pure%20Chat%20%26%20Markdown-success?style=flat)](./README.md#overview)
 
@@ -46,8 +47,8 @@ Small conversational web models (like GPT 5.6 Luna) excel at explanations, dialo
 - **100% Free ($0.00 Cost):** Uses your existing free ChatGPT Web session. No OpenAI API keys or credit cards needed.
 - **Cordis Plugin-First Lifecycle:** Managed by DSH via `ctx.effect`. DeepSeek Harness starts the background sidecar automatically on launch and shuts it down on exit.
 - **Dynamic Model Auto-Detection:** Automatically detects your ChatGPT tier:
-  - **Free Accounts:** Defaults to `chatgpt-web/luna` (`gpt-5-6-luna`).
-  - **Plus / Team Accounts:** Automatically detects and exposes available paid models (such as `gpt-4o`, `o1`).
+  - **Free Accounts:** Defaults to `chatgpt-web/luna` (`gpt-5-6-luna`) and `chatgpt-web/think`.
+  - **Plus / Team Accounts:** Automatically detects and exposes **GPT-6** (`chatgpt-web/gpt-6-light`, `medium`, `high`) and **GPT-5.6 Sol** (`chatgpt-web/light`, `medium`, `high`), plus Pro tiers when available.
 - **Full Streaming Markdown & Code Blocks:** Delivers tokens in real time directly to the DSH Web UI or CLI.
 - **Portable, Validated Artifacts:** The published tarball is validated by CI (clean install, runtime smoke test, dependency resolution, no build-environment path contamination) before it can reach the registries.
 
@@ -68,7 +69,11 @@ Small conversational web models (like GPT 5.6 Luna) excel at explanations, dialo
 Install the plugin directly from this GitHub repository:
 
 ```bash
-dsh plugin --profile <profile> add github:lordraiden/dsh-chatgpt-web
+# Via npm registry (recommended):
+dsh plugin --profile <profile> add @wlv-zedd/dsh-chatgpt-web
+
+# Or directly from GitHub:
+dsh plugin --profile <profile> add github:WLV-ZEDD/dsh-chatgpt-web
 ```
 
 This registers the plugin in the profile's `package.json` bundles, so its Cordis entries are composed automatically — no manual `insert` is needed.

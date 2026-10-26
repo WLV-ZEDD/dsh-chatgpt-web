@@ -4,7 +4,7 @@
 **Status:** Definitive target architecture  
 **Implementation status:** Target architecture; the repository still contains the pre-rearchitecture HTTP/ProviderAdapter path that this document defines how to converge.  
 **Document role:** Architectural reference and implementation boundary  
-**Repository:** lordraiden/dsh-chatgpt-web  
+**Repository:** WLV-ZEDD/dsh-chatgpt-web  
 **Last updated:** 2026-10-02
 
 ## 1. Purpose
