@@ -2019,6 +2019,37 @@ export function insertPlainTextIntoComposer(element: HTMLElement, value: string)
   return document.execCommand("insertText", false, value);
 }
 
+export const CHATGPT_SEND_BUTTON_SELECTORS = [
+  '[data-testid="send-button"]',
+  'button[aria-label="Send"]',
+  'button[aria-label="发送"]',
+  'button[aria-label="发送消息"]',
+  'button[aria-label*="Send" i]',
+  'button[aria-label*="发送"]',
+].join(", ");
+
+export async function resolveChatGptComposerContainer(composer: Locator, page?: Page): Promise<Locator> {
+  const formScope = composer.locator("xpath=ancestor::form[1]");
+  if (await formScope.count().catch(() => 0) > 0) return formScope.first();
+  const containerScope = composer.locator("xpath=ancestor::*[self::form or self::div or @role='group' or @role='region'][1]");
+  if (await containerScope.count().catch(() => 0) > 0) return containerScope.first();
+  return composer;
+}
+
+export async function resolveChatGptSendButton(composer: Locator, page?: Page): Promise<Locator> {
+  // Strategy 1: Ancestor form if present
+  const formScope = composer.locator("xpath=ancestor::form[1]").locator(CHATGPT_SEND_BUTTON_SELECTORS);
+  if (await formScope.count().catch(() => 0) > 0) return formScope.first();
+
+  // Strategy 2: Ancestor container (div, role=group, role=region)
+  const containerScope = composer.locator("xpath=ancestor::*[self::form or self::div or @role='group' or @role='region'][1]").locator(CHATGPT_SEND_BUTTON_SELECTORS);
+  if (await containerScope.count().catch(() => 0) > 0) return containerScope.first();
+
+  // Strategy 3: Page-level active send button fallback
+  if (page) return page.locator(CHATGPT_SEND_BUTTON_SELECTORS).first();
+  return composer.locator(CHATGPT_SEND_BUTTON_SELECTORS).first();
+}
+
 export class ChatGptBrowserWorker {
   static forProvider(provider: CodexProviderConfig): ChatGptBrowserWorker {
     const config = resolveBrowserConfig(provider);
@@ -3422,10 +3453,8 @@ export class ChatGptBrowserWorker {
     recoverObservation?: ChatGptObservationRecovery,
   ): Promise<ChatGptSubmissionEvidence> {
     const composer = await this.activeComposer(page);
-    const sendButton = composer
-      .locator("xpath=ancestor::form[1]")
-      .locator('[data-testid="send-button"], button[aria-label="Send"]')
-      .first();
+    const sendButton = await resolveChatGptSendButton(composer, page);
+    await captureDiagnostic?.("send-button-resolved");
     await sendButton.waitFor({ state: "visible", timeout: browserStageTimeouts.send });
     await settleChatGptUi();
     const sendEnableDeadline = Date.now() + this.config.tuning.sendEnableGraceMs;
@@ -3742,13 +3771,13 @@ export class ChatGptBrowserWorker {
     const files = chatGptPromptFilePayloads(prompt);
     if (files.length === 0) return;
     const composer = await this.activeComposer(page);
-    const composerForm = composer.locator("xpath=ancestor::form[1]");
+    const composerContainer = await resolveChatGptComposerContainer(composer, page);
     const input = page.locator('input[data-testid="upload-photos-input"]');
     await input.waitFor({ state: "attached", timeout: 20_000 });
     await input.setInputFiles(files);
     try {
       await Promise.all(files.map(file => (
-        composerForm.getByRole("group", { name: file.name, exact: true })
+        composerContainer.getByRole("group", { name: file.name, exact: true })
           .waitFor({ state: "visible", timeout: 60_000 })
       )));
     } catch {
@@ -3760,7 +3789,7 @@ export class ChatGptBrowserWorker {
         + (alerts.length > 0 ? `: ${alerts.join(" | ")}` : ""),
       );
     }
-    const send = composerForm.locator('[data-testid="send-button"], button[aria-label="Send"]').first();
+    const send = await resolveChatGptSendButton(composer, page);
     const deadline = Date.now() + 60_000;
     while (Date.now() < deadline) {
       if (await send.isEnabled().catch(() => false)) return;
