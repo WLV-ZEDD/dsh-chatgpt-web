@@ -1,9 +1,28 @@
+/**
+ * Where a browser failure happened. The phase determines whether replay is safe:
+ * before Send nothing was delivered; after Send a retry must not repeat a tool call.
+ */
+export type ChatGptWebFailurePhase =
+  | "pre_send"
+  | "send_activated"
+  | "observing"
+  | "completing"
+  | "unknown";
+
+/** What the caller may do about a classified failure. */
+export type ChatGptWebRetryDisposition =
+  | "retry_fresh_surface"
+  | "reattach_same_generation"
+  | "none";
+
 export interface ChatGptWebAdapterErrorOptions {
   status: number;
   errorType: string;
   code: string;
   retryable: boolean;
   cause?: unknown;
+  phase?: ChatGptWebFailurePhase;
+  retryDisposition?: ChatGptWebRetryDisposition;
 }
 
 export class ChatGptWebAdapterError extends Error {
@@ -11,6 +30,8 @@ export class ChatGptWebAdapterError extends Error {
   readonly errorType: string;
   readonly code: string;
   readonly retryable: boolean;
+  readonly phase: ChatGptWebFailurePhase;
+  readonly retryDisposition: ChatGptWebRetryDisposition;
 
   constructor(message: string, options: ChatGptWebAdapterErrorOptions) {
     super(message, options.cause === undefined ? undefined : { cause: options.cause });
@@ -19,6 +40,9 @@ export class ChatGptWebAdapterError extends Error {
     this.errorType = options.errorType;
     this.code = options.code;
     this.retryable = options.retryable;
+    this.phase = options.phase ?? "unknown";
+    this.retryDisposition = options.retryDisposition
+      ?? (options.retryable ? "retry_fresh_surface" : "none");
   }
 }
 
