@@ -32,6 +32,7 @@ import {
   chatGptClassifiedError,
   chatGptTurnEvent,
   classifyChatGptTurnFailure,
+  compactionFailureNeedsFreshSurface,
 } from "./turn-observability";
 import { TurnBroker, type BrokerToolRequest, type BrokerToolResult, type TurnBrokerOwner } from "./turn-broker";
 import { ChatGptTextFeed, ChatGptTraceFeed, chatGptCompactionSourceExecutionKey, chatGptThreadOwnershipKey, chatGptTurnExecutionKey, chatGptTurnRetryKey, chatGptTurnRoundKey, chatGptTurnSessions, type ChatGptBrowserOutcome, type ChatGptTraceEvent, type ChatGptTurnRuntime, type ChatGptTurnSession } from "./turn-execution";
@@ -1097,6 +1098,21 @@ export function createChatGptWebAdapter(
                     if (handoffError instanceof ChatGptWebAdapterError
                       && handoffError.code === "compaction_source_unavailable") {
                       return await runFreshCompactionFallback("source_disappeared_before_handoff");
+                    }
+                    // Losing the retained response surface is a renderer failure, not a model
+                    // failure. The old owner has already been retired above, so retry once on a
+                    // fresh surface instead of failing the user's compaction request.
+                    const handoffCode = handoffError instanceof ChatGptWebAdapterError
+                      ? handoffError.code
+                      : classifyChatGptTurnFailure({
+                        phase: "accepted",
+                        message: handoffError.message,
+                      }).code;
+                    if (compactionFailureNeedsFreshSurface(handoffCode)) {
+                      console.warn(
+                        `[chatgpt-web] structured compaction fresh-surface retry reason=${handoffCode}`,
+                      );
+                      return await runFreshCompactionFallback(`handoff_${handoffCode}`);
                     }
                     throw handoffError;
                   } finally {

@@ -217,7 +217,19 @@ export interface ChatGptTurnEvent {
 }
 
 /**
- * Machine-readable browser-turn event. Kept on one JSON line so log rotation and
+ * A structured compaction handoff that lost its retained browser surface can be retried once
+ * on a fresh surface. The caller must physically retire the old owner first; this helper only
+ * decides whether a fresh attempt is safe and useful.
+ */
+export function compactionFailureNeedsFreshSurface(code: string | undefined): boolean {
+  return code === "compaction_source_unavailable"
+    || code === "chatgpt_response_detached"
+    || code === "chatgpt_response_dom_lost"
+    || code === "chatgpt_dom_observation_timeout"
+    || code === "chatgpt_assistant_turn_missing";
+}
+
+/** Machine-readable browser-turn event. Kept on one JSON line so log rotation and
  * correlation do not depend on human-formatted text.
  */
 export function chatGptTurnEvent(event: ChatGptTurnEvent): void {

@@ -3,6 +3,7 @@ import { ChatGptWebAdapterError } from "../src/adapters/chatgpt-web/adapter-erro
 import {
   chatGptClassifiedError,
   classifyChatGptTurnFailure,
+  compactionFailureNeedsFreshSurface,
 } from "../src/adapters/chatgpt-web/turn-observability";
 
 test("pre-send browser setup failures are retryable on a fresh surface", () => {
@@ -136,4 +137,14 @@ test("existing adapter errors default to a coherent retry disposition", () => {
     retryable: false,
   });
   expect(terminal.retryDisposition).toBe("none");
+});
+
+test("a detached compaction handoff is retried on a fresh surface, not reported as terminal", () => {
+  expect(compactionFailureNeedsFreshSurface("compaction_source_unavailable")).toBe(true);
+  expect(compactionFailureNeedsFreshSurface("chatgpt_response_detached")).toBe(true);
+  expect(compactionFailureNeedsFreshSurface("chatgpt_response_dom_lost")).toBe(true);
+  expect(compactionFailureNeedsFreshSurface("chatgpt_dom_observation_timeout")).toBe(true);
+  expect(compactionFailureNeedsFreshSurface("chatgpt_assistant_turn_missing")).toBe(true);
+  expect(compactionFailureNeedsFreshSurface("context_length_exceeded")).toBe(false);
+  expect(compactionFailureNeedsFreshSurface(undefined)).toBe(false);
 });
